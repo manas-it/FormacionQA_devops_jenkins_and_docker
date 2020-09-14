@@ -1,5 +1,6 @@
 node('master'){
-    def mavenFolfer = "C:/Users/Francisco Moreno/.m2";
+    # Añadir la carpeta con instalación de Maven adecuada
+    def mavenFolfer = "C:/Users/users/.m2";
     stage('checkout') {
         git branch: 'master', credentialsId: 'GitLab', url: 'https://gitlab.sngular.com/standards/code/QA/TOOLS.git'
     }
@@ -13,10 +14,12 @@ node('master'){
             bat 'docker run -i --rm --name my-maven-test -v "%cd%":/usr/src/app -v "'+mavenFolfer+'":/root/.m2 -w /usr/src/app maven:3.5.2-jdk-8-alpine mvn test -Pcucumber'           
         }
     }
-    //stage('Result'){
-        //junit '**/target/surefire-reports/TEST-*.xml'
-        //archiveArtifacts artifacts: 'target*//*.jar', followSymlinks: false, onlyIfSuccessful: true
-    //}
+    stage('Result'){
+        dir("./QA+DEVOPS/demo-project") {
+            junit '**/target/surefire-reports/TEST-*.xml'
+            archiveArtifacts artifacts: 'target*//*.jar', followSymlinks: false, onlyIfSuccessful: true
+        }
+    }
     stage('sonar'){
         dir("./QA+DEVOPS/demo-project") {
             def localUrl = InetAddress.localHost.hostAddress
@@ -34,7 +37,7 @@ node('master'){
         dir("./QA+DEVOPS/demo-project") {
             bat 'docker run -i --rm --name my-maven-test -v "%cd%":/usr/src/app -v "'+mavenFolfer+'":/root/.m2 -w /usr/src/app maven:3.5.2-jdk-8-alpine mvn test'           
         }
-       //cucumber '**/target/surefire-reports/cucumber.json'
+        cucumber '**/target/surefire-reports/cucumber.json'
     }
     stage('integration tests with postman'){
         dir("./QA+DEVOPS/demo-project") {
